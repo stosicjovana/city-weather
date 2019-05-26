@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="stylesheet" href="/style.css" type="text/css">
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+<head>
+    <title>City-Weather</title>
+</head>
+<body>
+	
+<div class="container">
+		<div class="container__item">
+				<input id="input" class="form__field" placeholder="Enter city name" name="city_name" />
+				<button id="send" class="btn btn--primary btn--inside uppercase">Add city</button>
+		</div>
+	</div>
+
+
+	<div id="cityHolder" class="weather_wrapper">
+	</div>
+
+<script>
+		var socket = io();
+		 $(() => {
+			 $("#send").click(()=>{
+				 sendAddMessage({city_name: $("#input").val()});
+			 })
+		 })
+
+		$( "#cityHolder" ).on("click", function(val) {
+			val.preventDefault();
+			if(val && val.target.attributes.value && val.target.attributes.value.value){
+				sendRemoveMessage({city_id: val.target.attributes.value.value});
+			}		
+			else{
+				val.stopImmediatePropagation();
+			}
+		});
+
+
+		 socket.on('cities', addCity);
+		 socket.on('delete', removeCityById);
+
+
+		 function addCity(w){	
+				$("#cityHolder").append(
+					`<div id=${w.id}  width: 400px margin: 100px auto>
+					<div class="weatherCard">
+					<div class="currentTemp">
+						<span class="temp">${w.temp} °C</span>
+						<span class="location">${w.city}</span>
+					</div>
+					<div class = "weather_wrapper">
+							<div class="currentWeather"> 
+									<div class="conditions">
+										<div>
+												<img src="http://openweathermap.org/img/w/${w.icon}.png" alt="Image"  style="width:90px">
+												<p>${w.desc}</p>
+										</div>
+											 
+									</div>
+									
+								<div class="info">
+									<span class="time">${w.time}</span>
+									<span class="wind">${w.wind} m/s</span>
+								</div>
+							</div>
+								<button  class="btn btn--primary btn--outside uppercase" value=${w.id}  >Remove</button>
+					</div>
+				</div>`		
+				)
+			 };
+
+			
+		 function sendAddMessage(message){
+		   $.post('http://localhost:3000/add', message)
+		 }
+
+		 function sendRemoveMessage(message){
+		   $.post('http://localhost:3000/remove', message)
+		 }
+
+		 function removeCityById(id){
+			 $('#'+id).remove();
+		 }
+</script>
+
+</body>
+</html>
